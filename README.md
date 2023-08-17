@@ -1,28 +1,26 @@
 
-## tspacketchk とは
+## chktspkt とは
 
-本プログラムは,
-MPEG-2 TS パケットの健全性をチェックするものです。
+本プログラムは、MPEG-2 TS パケットの健全性をチェックするものです。
+@kaikoma-soft 氏が作成された [tspacketchk](https://github.com/kaikoma-soft/tspacketchk) を元に作成しました。
 
 ## 特徴
 
-* オリジナルは
-[tsselect]( http://www.marumo.ne.jp/junk/tsselect-0.1.8.lzh )
-で、それのチェック機能の部分を抜き出して改造、機能追加したもの。
-* オリジナルとは下記のような違いがある。
-    * 結果の表示を見やすく。
-    * drop、error 等が発生した時刻を表示。
-    * 録画開始直後の不安定な期間を無視することが可能。(-s オプション)
-    * PCR Wrap-around check の追加。(-P オプション)
-    * drop,errorのカウント方法が違うので、結果の数字は異なる場合がある。
+* いつドロップやエラーなどが発生したのかの時刻を調査できる
+    * 正確には先頭からのオフセットの時刻ですが、ベース時間の指定によりおよその時刻は判別可能
+* オリジナル tspacketchk との違い
+    * エラーの発生時刻は全出力
+    * ただし先頭および末尾のエラーを無視する設定を追加
+    * 他ツール向けに JSON を出力可能
+    * 各PIDごとのエラー情報は省略
 
 
 ## インストール方法
-下記で /usr/local/bin/tspacketchk にインストールします。
+下記で /usr/local/bin/chktspkt にインストールします。
    ```
-   % mkdir /tmp/tspacketchk
-   % cd /tmp/tspacketchk
-   % git clone https://github.com/kaikoma-soft/tspacketchk.git .
+   % mkdir /tmp/chktspkt
+   % cd /tmp/chktspkt
+   % git clone https://github.com/techmadot/chktspkt.git .
    % make
    % sudo make install
    ```
@@ -30,22 +28,17 @@ MPEG-2 TS パケットの健全性をチェックするものです。
 ## 実行方法
 
    ```
-  % tspacketchk [オプション]... TSファイル...
+  % chktspkt [オプション]... TSファイル...
    ```
 
 ## オプションの説明
 
-#####  -l, --limit n
-詳細表示の行数を n行にする。デフォルトは 16
 
-#####  -s, --skip n
+#####  -s, --ignore-start n
 開始直後の n秒はエラーを無視する
 
-##### -p, --progress
-進捗状況の表示
-
-##### -P, --PCR
-PCR Wrap-around check の追加
+##### -e, --ignore-end n
+終了直前の n秒はエラーを無視する
 
 #####  -h, --help
 この使い方を表示して終了する
@@ -97,44 +90,19 @@ PCR Wrap-around check の追加
             Check Time = 0.1 sec     (3767.12 Mbyte/sec)
    ```
 
-### 説明
-
-#### drop
-巡回カウンターが連続しなかった場合にカウント。
-(失われたパケット数ではなく不連続が生じた回数)
-#### error
-TSヘッダー部の transport_error_indicator ビットがセットされていた場合にカウント。
-#### scrambling
-TSヘッダー部の transport_scrambling_control ビットがセットされていた場合に
-カウント。<br>
-B25 デコード前ならば、カウントされるのが正常。<br>
-B25 デコード後ならば、カウントされないのが正常。
-
-#### syncbyte lost
-同期バイト(0x47) を見失った回数
-
-#### PCR Wrap-around check
-PCR（Program Clock Reference）の値が スタート時 < 終了時 の場合に OK
-<br>
-そうでない場合に NG とする。( PCR は 26.5H で一周する )
-<br>
-NG の場合、一部のツールで上手く扱えない可能性がある。(最近はそうでもない？)
-
-
 
 ## 動作確認環境
 
 
 | マシン           | OS                                    |
 |------------------|---------------------------------------|
-| PC               |    Ubuntu 20.04.2 LTS (64bit)         |
-| raspberry pi 3B+ | Raspbian GNU/Linux 9 (stretch) (32bit)|
+| Rock5 Model B   | Armbian 23.02 jammy                   |
 
 
 ## 連絡先
 
 不具合報告などは、
-[GitHub issuse](https://github.com/kaikoma-soft/tspacketchk/issues)
+[GitHub issuse](https://github.com/techmadot/chktspkt/issues)
 の方にお願いします。
 
 
@@ -146,6 +114,7 @@ NG の場合、一部のツールで上手く扱えない可能性がある。(�
 ## 謝辞
 
 このソフトウェアは、
- tsselect ( http://www.marumo.ne.jp/junk/tsselect-0.1.8.lzh )
+ tspacktchk ( https://github.com/kaikoma-soft/tspacketchk )
 を基に、作成したものです。<br>
-ソースコードの利用を許可して頂き、ありがとうございました。
+ツールを作成、公開していただき、ありがとうございました。
+

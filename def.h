@@ -1,17 +1,8 @@
-
-
-#define _LARGEFILE64_SOURCE
-#if __WORDSIZE != 64
-#define _FILE_OFFSET_BITS    64
-#endif
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 
-#include <sys/io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -22,9 +13,6 @@
 #include <getopt.h>
 #include <stdbool.h>
 #include <errno.h> 
-
-//#define INT64  uint64_t
-#define INT64  unsigned long long
 
 typedef struct {                /* read buff */
   int           fd;
@@ -77,8 +65,8 @@ typedef struct {
   int           transport_private_data_flag;
   int           adaptation_field_extension_flag;
 
-  INT64         program_clock_reference;
-  INT64         original_program_clock_reference;
+  int64_t       program_clock_reference;
+  int64_t       original_program_clock_reference;
 
   int           splice_countdown;
 
@@ -92,7 +80,7 @@ typedef struct {
   int           ltw_offset;
   int           piecewise_rate;
   int           splice_type;
-  INT64         dts_next_au;
+  int64_t      dts_next_au;
 	
 } ADAPTATION_FIELD;
 
@@ -104,27 +92,43 @@ typedef struct {                /* verbose data */
 
 #define BUF_SIZE 1024 * 32
 
-extern char *version;
-extern bool  opt_p;
-extern bool  opt_P;
-extern bool  opt_d;
-extern int   opt_s ;
-extern int   opt_l ;
+typedef struct {
+  int   start_skip;
+  int   end_skip;
+  char* input_file;
+  int64_t base_time;
+  int   mode_json;
+  int   add_start_end_entry;
+} OPTION;
+
+extern OPTION gOption;
+
+enum ErrorType
+{
+  Error = 0,
+  Drop = 1,
+  Scramble = 2,
+};
+typedef struct {
+  int64_t pcr;
+  int pid;
+  int packet;
+  ErrorType err_type;
+} INFO_ENTRY;
 
 
-void show_usage();
 int select_unit_size(unsigned char *head, unsigned char *tail);
 unsigned char *resync(unsigned char *head, unsigned char *tail, int unit_size);
 void extract_ts_header(TS_HEADER *dst, unsigned char *packet);
 void extract_adaptation_field(ADAPTATION_FIELD *dst, unsigned char *data);
 
 
-INT64   getPCR(TS_HEADER *hdr, ADAPTATION_FIELD *adapt );
+int64_t getPCR(const TS_HEADER *hdr, const ADAPTATION_FIELD *adapt );
 bool    packetEmpty( ReadBuf *rb );
-bool    skip( INT64 pcr  );
-char    *pcr2str( INT64 pcr);
+bool    skip( int64_t pcr  );
+char    *pcr2str( int64_t pcr);
 int     read_buf( ReadBuf *rb );
 unsigned char *resyncRB(ReadBuf *rb );
 void    packetchk(const char *path);
-bool    verbose( VERBOSE_DATA *vd, INT64 pcr, int pcc, char *type, int pid );
-INT64   durationCalc( INT64 start, INT64 end );
+bool    verbose( VERBOSE_DATA *vd, int64_t pcr, int pcc, const char *type, int pid );
+int64_t durationCalc( int64_t start, int64_t end );

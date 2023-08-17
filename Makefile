@@ -1,15 +1,17 @@
 
-CC = cc
+CC = g++
 #CFLAGS = -g
 CFLAGS = -O2 
 LDFLAGS = 
-OBJS = tspacketchk.o tsselect.o main.o
-PROGRAM = tspacketchk
+OBJS = main.o chktspkt.o tsselect.o
+PROGRAM = chktspkt
 DEST = /usr/local/bin
 
 $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS)
 
+.cpp.o:
+	$(CC) $(CFLAGS) -c $<
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
@@ -24,3 +26,4 @@ install:$(PROGRAM1)
 tspacketchk.o: def.h
 tsselect.o:  def.h
 main.o:   def.h
+chktspkt.o: def.h
